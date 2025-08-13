@@ -1,27 +1,11 @@
 "use server"
 
-import { createClient } from "@supabase/supabase-js"
+import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
-function createSupabaseClient() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-    cookies: {
-      get(name: string) {
-        return cookies().get(name)?.value
-      },
-      set(name: string, value: string, options: any) {
-        cookies().set({ name, value, ...options })
-      },
-      remove(name: string, options: any) {
-        cookies().set({ name, value: "", ...options })
-      },
-    },
-  })
-}
-
-// Sign in action
 export async function signIn(prevState: any, formData: FormData) {
+  // Check if formData is valid
   if (!formData) {
     return { error: "Form data is missing" }
   }
@@ -29,11 +13,13 @@ export async function signIn(prevState: any, formData: FormData) {
   const email = formData.get("email")
   const password = formData.get("password")
 
+  // Validate required fields
   if (!email || !password) {
     return { error: "Email and password are required" }
   }
 
-  const supabase = createSupabaseClient()
+  const cookieStore = cookies()
+  const supabase = createServerActionClient({ cookies: () => cookieStore })
 
   try {
     const { error } = await supabase.auth.signInWithPassword({
@@ -45,6 +31,7 @@ export async function signIn(prevState: any, formData: FormData) {
       return { error: error.message }
     }
 
+    // Return success instead of redirecting directly
     return { success: true }
   } catch (error) {
     console.error("Login error:", error)
@@ -52,8 +39,8 @@ export async function signIn(prevState: any, formData: FormData) {
   }
 }
 
-// Sign up action
 export async function signUp(prevState: any, formData: FormData) {
+  // Check if formData is valid
   if (!formData) {
     return { error: "Form data is missing" }
   }
@@ -62,11 +49,13 @@ export async function signUp(prevState: any, formData: FormData) {
   const password = formData.get("password")
   const role = formData.get("role") || "user"
 
+  // Validate required fields
   if (!email || !password) {
     return { error: "Email and password are required" }
   }
 
-  const supabase = createSupabaseClient()
+  const cookieStore = cookies()
+  const supabase = createServerActionClient({ cookies: () => cookieStore })
 
   try {
     const { data, error } = await supabase.auth.signUp({
@@ -105,9 +94,10 @@ export async function signUp(prevState: any, formData: FormData) {
   }
 }
 
-// Sign out action
 export async function signOut() {
-  const supabase = createSupabaseClient()
+  const cookieStore = cookies()
+  const supabase = createServerActionClient({ cookies: () => cookieStore })
+
   await supabase.auth.signOut()
   redirect("/auth/login")
 }
