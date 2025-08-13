@@ -1,8 +1,24 @@
 "use server"
 
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
+import { createClient } from "@supabase/supabase-js"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+
+function createSupabaseClient() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    cookies: {
+      get(name: string) {
+        return cookies().get(name)?.value
+      },
+      set(name: string, value: string, options: any) {
+        cookies().set({ name, value, ...options })
+      },
+      remove(name: string, options: any) {
+        cookies().set({ name, value: "", ...options })
+      },
+    },
+  })
+}
 
 // Sign in action
 export async function signIn(prevState: any, formData: FormData) {
@@ -17,12 +33,7 @@ export async function signIn(prevState: any, formData: FormData) {
     return { error: "Email and password are required" }
   }
 
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({
-    cookies: () => cookieStore,
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  })
+  const supabase = createSupabaseClient()
 
   try {
     const { error } = await supabase.auth.signInWithPassword({
@@ -55,12 +66,7 @@ export async function signUp(prevState: any, formData: FormData) {
     return { error: "Email and password are required" }
   }
 
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({
-    cookies: () => cookieStore,
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  })
+  const supabase = createSupabaseClient()
 
   try {
     const { data, error } = await supabase.auth.signUp({
@@ -101,13 +107,7 @@ export async function signUp(prevState: any, formData: FormData) {
 
 // Sign out action
 export async function signOut() {
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({
-    cookies: () => cookieStore,
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  })
-
+  const supabase = createSupabaseClient()
   await supabase.auth.signOut()
   redirect("/auth/login")
 }
