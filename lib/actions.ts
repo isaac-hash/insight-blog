@@ -18,7 +18,11 @@ export async function signIn(prevState: any, formData: FormData) {
   }
 
   const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = createServerActionClient({
+    cookies: () => cookieStore,
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  })
 
   try {
     const { error } = await supabase.auth.signInWithPassword({
@@ -52,7 +56,11 @@ export async function signUp(prevState: any, formData: FormData) {
   }
 
   const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = createServerActionClient({
+    cookies: () => cookieStore,
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  })
 
   try {
     const { data, error } = await supabase.auth.signUp({
@@ -94,7 +102,11 @@ export async function signUp(prevState: any, formData: FormData) {
 // Sign out action
 export async function signOut() {
   const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = createServerActionClient({
+    cookies: () => cookieStore,
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  })
 
   await supabase.auth.signOut()
   redirect("/auth/login")
