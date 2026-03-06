@@ -5,7 +5,6 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { isSupabaseConfigured } from "./supabase/server"
 
-
 export async function signIn(prevState: any, formData: FormData) {
   // Check if formData is valid
   if (!formData) {
