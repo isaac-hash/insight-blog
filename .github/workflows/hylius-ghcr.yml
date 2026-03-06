@@ -22,7 +22,7 @@ jobs:
         run: curl -sSL https://railpack.com/install.sh | bash
       - name: Build and push image with Railpack
         run: |
-          railpack build . -t ghcr.io/${{ github.repository }}:${{ github.sha }}
+          railpack build . --name ghcr.io/${{ github.repository }}:${{ github.sha }}
           docker push ghcr.io/${{ github.repository }}:${{ github.sha }}
       - name: Notify Hylius
         run: |
