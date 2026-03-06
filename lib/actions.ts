@@ -3,6 +3,7 @@
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { isSupabaseConfigured } from "./supabase/server"
 
 export async function signIn(prevState: any, formData: FormData) {
   // Check if formData is valid
@@ -52,6 +53,12 @@ export async function signUp(prevState: any, formData: FormData) {
   // Validate required fields
   if (!email || !password) {
     return { error: "Email and password are required" }
+  }
+
+  // If Supabase isn't configured, fail gracefully rather than throwing
+  if (!isSupabaseConfigured) {
+    console.warn("signUp called without Supabase config")
+    return { error: "Registration is disabled in this environment." }
   }
 
   const cookieStore = cookies()

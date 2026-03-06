@@ -126,7 +126,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         {/* Related Articles */}
         <div className="mt-16">
-          <RelatedArticles currentArticleId={article.id} categoryId={article.category_id} />
+          {/* RelatedArticles is an async server component; call it before the JSX
+              rather than embedding the Promise directly. */}
+          {await RelatedArticles({ currentArticleId: article.id, categoryId: article.category_id })}
         </div>
       </main>
     </div>

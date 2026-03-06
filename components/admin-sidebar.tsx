@@ -1,5 +1,6 @@
 "use client"
 
+
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -18,7 +19,11 @@ export default function AdminSidebar({ user, userRole }: AdminSidebarProps) {
   const supabase = createClient()
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error("Sign-out failed:", error.message)
+    }
+    // Navigate back to home regardless so the UI updates
     router.push("/")
   }
 

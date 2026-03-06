@@ -1,50 +1,57 @@
 "use client"
 
-import { useActionState } from "react"
-import { useFormStatus } from "react-dom"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 import Link from "next/link"
-import { signUp } from "@/lib/actions"
-
-function SubmitButton() {
-  const { pending } = useFormStatus()
-
-  return (
-    <Button
-      type="submit"
-      disabled={pending}
-      className="w-full bg-blue-600 hover:bg-blue-700 font-body font-semibold py-6 text-lg rounded-lg h-[60px]"
-    >
-      {pending ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Creating account...
-        </>
-      ) : (
-        "Create Account"
-      )}
-    </Button>
-  )
-}
 
 export default function SignUpForm() {
-  const [state, formAction] = useActionState(signUp, null)
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setPending(true)
+    setError(null)
+    setSuccess(null)
+
+    const formData = new FormData(e.currentTarget)
+
+    try {
+      const res = await fetch("/api/signup", {
+        method: "POST",
+        body: formData,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || "An unexpected error occurred.")
+      } else {
+        setSuccess(data.success || "Account created. Check your email.")
+        e.currentTarget.reset()
+      }
+    } catch (err) {
+      console.error("Signup request failed", err)
+      setError("Failed to submit form.")
+    } finally {
+      setPending(false)
+    }
+  }
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-lg border border-slate-200">
-      <form action={formAction} className="space-y-6">
-        {state?.error && (
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg font-body text-sm">
-            {state.error}
+            {error}
           </div>
         )}
 
-        {state?.success && (
+        {success && (
           <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg font-body text-sm">
-            {state.success}
+            {success}
           </div>
         )}
 
@@ -76,7 +83,20 @@ export default function SignUpForm() {
           </div>
         </div>
 
-        <SubmitButton />
+        <Button
+          type="submit"
+          disabled={pending}
+          className="w-full bg-blue-600 hover:bg-blue-700 font-body font-semibold py-6 text-lg rounded-lg h-[60px]"
+        >
+          {pending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating account...
+            </>
+          ) : (
+            "Create Account"
+          )}
+        </Button>
 
         <div className="text-center font-body text-slate-600">
           Already have an account?{" "}
