@@ -1,0 +1,34 @@
+name: Hylius Build & Deploy via GHCR
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+      - name: Notify Hylius
+        run: |
+          curl -X POST "$HYLIUS_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $HYLIUS_TOKEN" \
+            -d '{"image":"ghcr.io/${{ github.repository }}:${{ github.sha }}","sha":"${{ github.sha }}","repo":"${{ github.repository }}","ref":"${{ github.ref }}"}'
+        env:
+          HYLIUS_WEBHOOK: ${{ secrets.HYLIUS_WEBHOOK_URL }}
+          HYLIUS_TOKEN: ${{ secrets.HYLIUS_API_TOKEN }}
