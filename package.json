@@ -1,6 +1,7 @@
 {
   "name": "myv0project",
   "version": "1.0.0",
+  "packageManager": "pnpm@10.23.0",
   "scripts": {
     "build": "next build",
     "dev": "next dev",
