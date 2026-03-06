@@ -18,11 +18,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push image
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+      - name: Install Railpack
+        run: curl -sSL https://railpack.com/install.sh | bash
+      - name: Build and push image with Railpack
+        run: |
+          railpack build . -t ghcr.io/${{ github.repository }}:${{ github.sha }}
+          docker push ghcr.io/${{ github.repository }}:${{ github.sha }}
       - name: Notify Hylius
         run: |
           curl -X POST "$HYLIUS_WEBHOOK" \
