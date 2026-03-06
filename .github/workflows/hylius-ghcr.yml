@@ -18,6 +18,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Start BuildKit
+        run: |
+          docker run -d --name buildkitd --privileged moby/buildkit:latest
+          echo "BUILDKIT_HOST=docker-container://buildkitd" >> $GITHUB_ENV
       - name: Install Railpack
         run: curl -sSL https://railpack.com/install.sh | bash
       - name: Build and push image with Railpack
